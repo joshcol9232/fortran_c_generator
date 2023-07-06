@@ -1,5 +1,5 @@
 <ofp version="0.8.5-1">
-  <file col_begin="0" col_end="19" line_begin="2" line_end="28" path="/home/josh/programming/fortran/interface_gen/example.F90">
+  <file col_begin="0" col_end="26" line_begin="2" line_end="40" path="/home/josh/programming/fortran/interface_gen/example.F90">
     <start-of-file filename="example.F90" path="/home/josh/programming/fortran/interface_gen/example.F90" rule="-2" />
     <comment col_begin="0" col_end="11" line_begin="2" line_end="2" text="! a + b = c" />
     <subroutine col_begin="0" col_end="19" line_begin="3" line_end="14" name="add">
@@ -290,6 +290,161 @@
         </statement>
       </body>
       <end-subroutine-stmt col_begin="0" col_end="19" eos="&#10;" keyword1="end" keyword2="subroutine" line_begin="28" line_end="28" name="sub" rule="1234" />
+    </subroutine>
+    <subroutine col_begin="0" col_end="26" line_begin="31" line_end="40" name="add_arrays">
+      <header col_begin="0" col_end="31" line_begin="31" line_end="31">
+        <subroutine-stmt__begin addendum="begin" rule="1232" />
+        <arguments col_begin="22" col_end="29" count="3" line_begin="31" line_end="31">
+          <dummy-arg-list__begin addendum="list-begin" rule="1233" />
+          <argument col_begin="22" col_end="23" line_begin="31" line_end="31" name="a">
+            <dummy-arg col_begin="22" col_end="23" dummy="a" line_begin="31" line_end="31" rule="1233" />
+          </argument>
+          <argument col_begin="25" col_end="26" line_begin="31" line_end="31" name="b">
+            <dummy-arg col_begin="25" col_end="26" dummy="b" line_begin="31" line_end="31" rule="1233" />
+          </argument>
+          <argument col_begin="28" col_end="29" line_begin="31" line_end="31" name="c">
+            <dummy-arg col_begin="28" col_end="29" dummy="c" line_begin="31" line_end="31" rule="1233" />
+          </argument>
+          <dummy-arg-list addendum="list" count="3" rule="1233" />
+        </arguments>
+        <subroutine-stmt col_begin="0" col_end="31" eos="&#10;" hasArgSpecifier="true" hasBindingSpec="false" hasDummyArgList="true" hasPrefix="false" keyword="subroutine" line_begin="31" line_end="31" name="add_arrays" rule="1232" />
+      </header>
+      <body col_begin="2" col_end="11" line_begin="33" line_end="38">
+        <specification col_begin="2" col_end="34" declarations="3" implicits="1" imports="0" line_begin="33" line_end="36" uses="0">
+          <declaration col_begin="2" col_end="16" line_begin="33" line_end="33" subtype="none" type="implicit">
+            <implicit-stmt col_begin="2" col_end="16" eos="&#10;" hasImplicitSpecList="false" implicitKeyword="implicit" line_begin="33" line_end="33" noneKeyword="none" rule="549" />
+          </declaration>
+          <declaration col_begin="2" col_end="33" line_begin="34" line_end="34" type="variable">
+            <type col_begin="2" col_end="9" hasAttributes="false" hasKind="false" hasLength="false" line_begin="34" line_end="34" name="integer" type="intrinsic">
+              <intrinsic-type-spec col_begin="2" col_end="9" hasKindSelector="false" keyword1="integer" keyword2="" line_begin="34" line_end="34" rule="403" type="400" />
+              <declaration-type-spec rule="502" type="500" udtKeyword="" />
+            </type>
+            <intent col_begin="21" col_end="23" line_begin="34" line_end="34" type="in">
+              <intent-spec col_begin="21" col_end="23" intent="600" intentKeyword1="in" intentKeyword2="" line_begin="34" line_end="34" rule="517" />
+            </intent>
+            <attr-spec attr="811" attrKeyword="intent" col_begin="14" col_end="20" line_begin="34" line_end="34" rule="503" />
+            <variables col_begin="28" col_end="29" count="1" line_begin="34" line_end="34">
+              <entity-decl-list__begin addendum="list-begin" rule="503008" />
+              <variable col_begin="28" col_end="29" hasInitialValue="false" line_begin="34" line_end="34" name="a">
+                <dimensions count="1">
+                  <dimension type="assumed-shape">
+                    <array-spec-element rule="510" type="705" />
+                  </dimension>
+                  <array-spec count="1" rule="510" />
+                </dimensions>
+                <entity-decl col_begin="28" col_end="29" hasArraySpec="true" hasCharLength="false" hasCoarraySpec="false" hasInitialization="false" id="a" line_begin="34" line_end="34" rule="503008" />
+              </variable>
+              <variable />
+              <entity-decl-list addendum="list" count="1" rule="503008" />
+            </variables>
+            <type-declaration-stmt col_begin="32" col_end="33" eos="&#10;" line_begin="34" line_end="34" numAttributes="1" rule="501" />
+          </declaration>
+          <declaration-construct rule="207" />
+          <declaration col_begin="2" col_end="33" line_begin="35" line_end="35" type="variable">
+            <type col_begin="2" col_end="9" hasAttributes="false" hasKind="false" hasLength="false" line_begin="35" line_end="35" name="integer" type="intrinsic">
+              <intrinsic-type-spec col_begin="2" col_end="9" hasKindSelector="false" keyword1="integer" keyword2="" line_begin="35" line_end="35" rule="403" type="400" />
+              <declaration-type-spec rule="502" type="500" udtKeyword="" />
+            </type>
+            <intent col_begin="21" col_end="23" line_begin="35" line_end="35" type="in">
+              <intent-spec col_begin="21" col_end="23" intent="600" intentKeyword1="in" intentKeyword2="" line_begin="35" line_end="35" rule="517" />
+            </intent>
+            <attr-spec attr="811" attrKeyword="intent" col_begin="14" col_end="20" line_begin="35" line_end="35" rule="503" />
+            <variables col_begin="28" col_end="29" count="1" line_begin="35" line_end="35">
+              <entity-decl-list__begin addendum="list-begin" rule="503008" />
+              <variable col_begin="28" col_end="29" hasInitialValue="false" line_begin="35" line_end="35" name="b">
+                <dimensions count="1">
+                  <dimension type="assumed-shape">
+                    <array-spec-element rule="510" type="705" />
+                  </dimension>
+                  <array-spec count="1" rule="510" />
+                </dimensions>
+                <entity-decl col_begin="28" col_end="29" hasArraySpec="true" hasCharLength="false" hasCoarraySpec="false" hasInitialization="false" id="b" line_begin="35" line_end="35" rule="503008" />
+              </variable>
+              <variable />
+              <entity-decl-list addendum="list" count="1" rule="503008" />
+            </variables>
+            <type-declaration-stmt col_begin="32" col_end="33" eos="&#10;" line_begin="35" line_end="35" numAttributes="1" rule="501" />
+          </declaration>
+          <declaration-construct rule="207" />
+          <declaration col_begin="2" col_end="34" line_begin="36" line_end="36" type="variable">
+            <type col_begin="2" col_end="9" hasAttributes="false" hasKind="false" hasLength="false" line_begin="36" line_end="36" name="integer" type="intrinsic">
+              <intrinsic-type-spec col_begin="2" col_end="9" hasKindSelector="false" keyword1="integer" keyword2="" line_begin="36" line_end="36" rule="403" type="400" />
+              <declaration-type-spec rule="502" type="500" udtKeyword="" />
+            </type>
+            <intent col_begin="18" col_end="23" line_begin="36" line_end="36" type="inout">
+              <intent-spec col_begin="18" col_end="23" intent="602" intentKeyword1="inout" intentKeyword2="" line_begin="36" line_end="36" rule="517" />
+            </intent>
+            <attr-spec attr="811" attrKeyword="intent" col_begin="11" col_end="17" line_begin="36" line_end="36" rule="503" />
+            <variables col_begin="28" col_end="32" count="1" line_begin="36" line_end="36">
+              <entity-decl-list__begin addendum="list-begin" rule="503008" />
+              <variable col_begin="28" col_end="32" hasInitialValue="false" line_begin="36" line_end="36" name="c">
+                <dimensions col_begin="30" col_end="32" count="1" line_begin="36" line_end="36">
+                  <dimension col_begin="30" col_end="32" line_begin="36" line_end="36" type="simple">
+                    <literal col_begin="30" col_end="32" line_begin="36" line_end="36" type="int" value="30">
+                      <int-literal-constant col_begin="30" col_end="32" digitString="30" kindParam="" line_begin="36" line_end="36" rule="406" />
+                      <literal-constant rule="306" />
+                      <primary rule="701" />
+                    </literal>
+                    <array-spec-element rule="510" type="700" />
+                  </dimension>
+                  <array-spec count="1" rule="510" />
+                </dimensions>
+                <entity-decl col_begin="28" col_end="29" hasArraySpec="true" hasCharLength="false" hasCoarraySpec="false" hasInitialization="false" id="c" line_begin="36" line_end="36" rule="503008" />
+              </variable>
+              <variable />
+              <entity-decl-list addendum="list" count="1" rule="503008" />
+            </variables>
+            <type-declaration-stmt col_begin="33" col_end="34" eos="&#10;" line_begin="36" line_end="36" numAttributes="1" rule="501" />
+          </declaration>
+          <declaration-construct rule="207" />
+          <declaration />
+          <specification-part numDeclConstructs="3" numImplicitStmts="1" numImportStmts="0" numUseStmts="0" rule="204" />
+        </specification>
+        <statement col_begin="2" col_end="11" line_begin="38" line_end="38">
+          <assignment col_begin="2" col_end="11" line_begin="38" line_end="38">
+            <target col_begin="2" col_end="3" line_begin="38" line_end="38">
+              <name col_begin="2" col_end="3" hasSubscripts="false" id="c" line_begin="38" line_end="38" type="variable">
+                <part-ref col_begin="2" col_end="3" hasImageSelector="false" hasSectionSubscriptList="false" id="c" line_begin="38" line_end="38" rule="613" />
+                <data-ref numPartRef="1" rule="612" />
+                <designator hasSubstringRange="false" rule="603" />
+                <variable rule="601" />
+              </name>
+            </target>
+            <value col_begin="6" col_end="11" line_begin="38" line_end="38">
+              <operation col_begin="6" col_end="11" line_begin="38" line_end="38" type="multiary">
+                <operand col_begin="6" col_end="7" line_begin="38" line_end="38">
+                  <name col_begin="6" col_end="7" hasSubscripts="false" id="a" line_begin="38" line_end="38" type="ambiguous">
+                    <part-ref col_begin="6" col_end="7" hasImageSelector="false" hasSectionSubscriptList="false" id="a" line_begin="38" line_end="38" rule="613" />
+                    <data-ref numPartRef="1" rule="612" />
+                    <designator-or-func-ref rule="-3" />
+                    <primary rule="701" />
+                  </name>
+                </operand>
+                <operator col_begin="8" col_end="9" line_begin="38" line_end="38" operator="+">
+                  <add-op addKeyword="+" col_begin="8" col_end="9" line_begin="38" line_end="38" rule="709" />
+                </operator>
+                <operand col_begin="8" col_end="11" line_begin="38" line_end="38">
+                  <name col_begin="10" col_end="11" hasSubscripts="false" id="b" line_begin="38" line_end="38" type="ambiguous">
+                    <part-ref col_begin="10" col_end="11" hasImageSelector="false" hasSectionSubscriptList="false" id="b" line_begin="38" line_end="38" rule="613" />
+                    <data-ref numPartRef="1" rule="612" />
+                    <designator-or-func-ref rule="-3" />
+                    <primary rule="701" />
+                  </name>
+                  <add-operand__add-op addOp="+" addendum="add-op" col_begin="8" col_end="9" line_begin="38" line_end="38" rule="705" />
+                </operand>
+                <add-operand numAddOps="1" rule="705" />
+              </operation>
+            </value>
+            <assignment-stmt rule="734" />
+          </assignment>
+          <action-stmt rule="214" />
+        </statement>
+        <statement>
+          <executable-construct rule="213" />
+          <execution-part rule="208" />
+        </statement>
+      </body>
+      <end-subroutine-stmt col_begin="0" col_end="26" eos="&#10;" keyword1="end" keyword2="subroutine" line_begin="40" line_end="40" name="add_arrays" rule="1234" />
     </subroutine>
     <end-of-file filename="example.F90" path="/home/josh/programming/fortran/interface_gen/example.F90" rule="-2" />
   </file>

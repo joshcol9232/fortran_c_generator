@@ -26,3 +26,16 @@ subroutine sub(a, b, c)
   c = a - b
 
 end subroutine sub
+
+
+subroutine add_arrays(a, b, c)
+  
+  implicit none
+  integer,    intent(in) :: a(:)
+  integer,    intent(in) :: b(:)
+  integer, intent(inout) :: c(222,223)
+
+  c = a + b
+
+end subroutine add_arrays
+
