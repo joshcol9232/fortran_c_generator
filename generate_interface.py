@@ -4,9 +4,12 @@ from sys import argv
 
 F_TO_C_TYPE = {
     "integer" : "integer(c_int)",
+    "integer(i_def)" : "integer(c_int)",
     "size_t"  : "integer(c_size_t)",    # CUSTOM - For array sizes
     "real"    : "real(c_double)",
-    "logical" : "logical(c_bool)"
+    "real(r_def)"    : "real(c_double)",
+    "logical" : "logical(c_bool)",
+    "logical(l_def)" : "logical(c_bool)"
 }
 
 # header file types
@@ -28,36 +31,31 @@ def f_to_c_type(inp):
         return "c_key_" + inp, False
 
 class Argument:
-    def __init__(self, name, ftype, intent, dimensions = [], xml_declaration = None):
+    def __init__(self, name, ftype, intent = "", size = "", xml_declaration = None):
         self.xml_declaration = xml_declaration
         self.name = name
         self.ftype = ftype
         self.intent = intent
-        self.dimensions = dimensions
+        self.size = size
 
-    """
-    Bool list of len(dimensions) which says if any of the args needs size
-    """
-    def needs_size_argument(self):
-        dim_needs_arg = []
-        for dim in self.dimensions:
-            dim_needs_arg.append(dim == ":")
-        print("NEEDS SIZE: ", dim_needs_arg)
-
-        return dim_needs_arg
+    def has_size(self):
+        return self.size != ""
+    def has_assumed_size(self):
+        return self.size == ":"
 
     def get_dim_string(self):
-        out_str = ""
-        if len(self.dimensions) > 0:
-            out_str += "("
-            idx = 0
-            for dimension in self.dimensions:
-                out_str += "%s" % dimension
+        if self.size != "":
+            return f"({self.size})" 
+        else:
+            return ""
 
-                idx += 1
-                if idx != len(self.dimensions):
-                    out_str += ","
-            out_str += ")"
+    def to_string(self):
+        out_str = f"{self.ftype}"
+        if self.intent != "":
+            out_str += f", intent({self.intent}) "
+
+        out_str += f" :: {self.name}"
+        out_str += self.get_dim_string()
         return out_str
 
     def to_f_interface_decl(self):
@@ -69,9 +67,7 @@ class Argument:
         return out_str
 
     def __repr__(self):
-        print_str = "{" + self.ftype + ", intent(" + self.intent + ") :: " + self.name
-        print_str += self.get_dim_string()
-        return print_str + "}"
+        return "{" + self.to_string() + "}"
 
 class Subroutine:
     # Subroutine name, subroutine arguments
@@ -83,16 +79,10 @@ class Subroutine:
 
     def generate_f_interface_func(self, interface_prefix):
         # First check if any size arguments are needed.
-        new_args = self.args
+        new_args = [arg for arg in self.args]
         for arg in self.args:
-            print("DOING ARG: ", arg)
-            needs_sizes = arg.needs_size_argument()
-            if len(needs_sizes) == 1 and needs_sizes[0]:
+            if arg.has_assumed_size():
                 new_args.append(Argument(f"{arg.name}_size", "size_t", "in"))
-            else:
-                for idx, ns in enumerate(needs_sizes):
-                    if ns:
-                        new_args.append(Argument(f"{arg.name}_size{idx}", "size_t", "in"))
 
         out_str = f"subroutine {interface_prefix}_{self.name}_c("
 
@@ -116,29 +106,58 @@ class Subroutine:
         for arg in new_args:
             out_str += " "*4 + arg.to_f_interface_decl() + "\n"
 
-        # Main body - call F function
-        out_str += f"""
-    call {self.name}()
-"""        
+        out_str += "\n    ! Locals\n"
+        # Locals - fortran type equivalents
+        for arg in self.args:
+            if "in" in arg.intent:
+                no_intent_arg = None
+                if arg.has_assumed_size():
+                    no_intent_arg = Argument(arg.name, arg.ftype, size = f"c_{arg.name}_size")
+                else:
+                    no_intent_arg = Argument(arg.name, arg.ftype, size = arg.size)
+                out_str += " "*4 + no_intent_arg.to_string() + "\n"
 
+        # --- MAIN BODY START ---
+        # - Set locals to convert C types
+        for arg in self.args:
+            out_str += " "*4 + f"{arg.name} = c_{arg.name}" + "\n"
 
+        out_str += "\n    ! -----------\n"
+        # - Call F function
+        out_str += " "*4 + f"call {self.name}("
+        for idx, arg in enumerate(self.args):
+            out_str += arg.name
+            if idx < len(self.args) - 1:
+                out_str += ", "
+
+        out_str += ")\n\n"
+        # - Set out variables
+        for arg in self.args:
+            if "out" in arg.intent:
+                out_str += " "*4 + f"c_{arg.name} = {arg.name}" + "\n"
+
+        out_str += "\n"
         out_str += f"end subroutine {interface_prefix}_{self.name}_c"
         
         return new_args, out_str + "\n"*2
 
 
-def dimensions_list_from_root_xml_node(dimensions):
-    dimensions_list = []
-    for dimension in dimensions.findall("dimension"):
-        arg_dim_type = dimension.attrib["type"]
-        if arg_dim_type == "assumed-shape":
-            dimensions_list.append(":")
-        elif arg_dim_type == "simple":
-            dimensions_list.append(dimension.find("literal").attrib["value"])
-        else:
-            raise ValueError("'%s' arg dimensions not accounted for." % arg_dim_type)
+def size_from_root_xml_node(dimensions):
+    if dimensions.attrib["count"] != "1":
+        raise ValueError("This script only works if arrays are 1D")
 
-    return dimensions_list
+    dim_str = ""
+    dimension = dimensions.find("dimension")
+
+    arg_dim_type = dimension.attrib["type"]
+    if arg_dim_type == "assumed-shape":
+        dim_str = ":"
+    elif arg_dim_type == "simple":
+        dim_str = str(dimension.find("literal").attrib["value"])
+    else:
+        raise ValueError("'%s' arg dimensions not accounted for." % arg_dim_type)
+
+    return dim_str
 
 def argument_from_declaration_root_xml_node(declaration):
     intent_tr = declaration.find("intent")
@@ -151,12 +170,12 @@ def argument_from_declaration_root_xml_node(declaration):
         variable = declaration.find("variables").findall("variable")[0]
         name = variable.attrib["name"]
 
-        dimensions_list = []
+        size = ""
         dimensions = variable.find("dimensions")
         if dimensions:
-            dimensions_list = dimensions_list_from_root_xml_node(dimensions)
+            size = size_from_root_xml_node(dimensions)
 
-        return Argument(name, ftype_name, intent, dimensions_list, xml_declaration = declaration)
+        return Argument(name, ftype_name, intent, size, xml_declaration = declaration)
     else:
         return None
 

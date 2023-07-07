@@ -33,7 +33,7 @@ subroutine add_arrays(a, b, c)
   implicit none
   integer,    intent(in) :: a(:)
   integer,    intent(in) :: b(:)
-  integer, intent(inout) :: c(222,223)
+  integer, intent(inout) :: c(222)
 
   c = a + b
 
