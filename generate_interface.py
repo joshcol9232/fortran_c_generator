@@ -39,12 +39,15 @@ def comma_separate_arg_list(args):
     return out_str
 
 class Argument:
-    def __init__(self, name, ftype, intent = "", size = "", xml_declaration = None):
+    def __init__(self, name, ftype, intent = "", size = "", is_registry_key = False, xml_declaration = None):
         self.xml_declaration = xml_declaration
         self.name = name
         self.ftype = ftype
         self.intent = intent
         self.size = size
+        self.is_registry_key = is_registry_key
+        # Split by "(" to fetch only the type without any kind specification
+        self.is_custom_type = not (ftype.split("(")[0] in F_TO_C_TYPE)
 
     def has_size(self):
         return self.size != ""
@@ -58,7 +61,12 @@ class Argument:
             return ""
 
     def to_string(self):
-        out_str = f"{self.ftype}"
+        out_str = ""
+        if self.is_custom_type:
+            out_str += f"type({self.ftype})"
+        else:
+            out_str += f"{self.ftype}"
+
         if self.intent != "":
             out_str += f", intent({self.intent}) "
 
@@ -68,17 +76,19 @@ class Argument:
 
     def to_f_interface(self):
         f_c_type, is_in_map = f_to_c_type(self.ftype)
+        assert is_in_map != self.is_custom_type
+
         name = ""
         intent = ""
-        if is_in_map:
-            name = f"c_{self.name}"
-            intent = self.intent
-        else:
-            # Otherwise it is probably a custom type? In a registry?
+        if self.is_custom_type:
+            # In a registry?
             name = f"c_key_{self.name}"
             intent = "in"  # probably... Unless a constructor - could check this somehow?
+        else:
+            name = f"c_{self.name}"
+            intent = self.intent
 
-        return Argument(name, f_c_type, intent=intent, size=self.size)
+        return Argument(name, f_c_type, intent=intent, size=self.size, is_registry_key = self.is_custom_type)
 
     def __repr__(self):
         return "{" + self.to_string() + "}"
@@ -115,9 +125,9 @@ class Subroutine:
 
     use {interface_prefix}_mod, only: {self.name}
 """
+    # If there are custom types
 
-
-        out_str += f"""
+        out_str += """
     implicit none
 """
         for arg in new_args:
@@ -135,9 +145,17 @@ class Subroutine:
                 
         # --- MAIN BODY START ---
         # - Set locals to convert C types
+        custom_type_buffer = ""
         for arg in self.args:
-            if arg.intent != "out":
-                out_str += " "*4 + f"{arg.name} = c_{arg.name}" + "\n"
+            if arg.is_custom_type:
+                # Fetch from registry
+                custom_type_buffer += " "*4 + f"call {arg.ftype}_registry%get(c_key_{arg.name})\n"
+
+            elif arg.intent != "out":
+                out_str += " "*4 + f"{arg.name} = c_{arg.name}\n"
+
+        # Fetch custom types from registries
+        out_str += custom_type_buffer
 
         out_str += "\n    ! -----------\n"
         # - Call F function

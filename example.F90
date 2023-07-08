@@ -39,12 +39,13 @@ subroutine add_arrays(a, b, c)
 
 end subroutine add_arrays
 
-subroutine custom_type(self)
+subroutine set_custom_type_attr(self, attr)
 
   implicit none
   type(a_custom_type), intent(inout) :: self
+  logical(l_def),      intent(in)    :: attr
   
-  call do_something_with_type(self)
+  call set_attr(self, attr)
 
-end subroutine custom_type
+end subroutine set_custom_type_attr
 
