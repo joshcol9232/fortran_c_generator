@@ -28,7 +28,15 @@ def f_to_c_type(inp):
     if inp in F_TO_C_TYPE:
         return F_TO_C_TYPE[inp], True
     else:
-        return "c_key_" + inp, False
+        return "integer(c_int)", False
+
+def comma_separate_arg_list(args):
+    out_str = ""
+    for idx, arg in enumerate(args):
+        out_str += arg.name
+        if idx < len(args) - 1:
+            out_str += ", "
+    return out_str
 
 class Argument:
     def __init__(self, name, ftype, intent = "", size = "", xml_declaration = None):
@@ -58,13 +66,19 @@ class Argument:
         out_str += self.get_dim_string()
         return out_str
 
-    def to_f_interface_decl(self):
-        # Turn into string
+    def to_f_interface(self):
         f_c_type, is_in_map = f_to_c_type(self.ftype)
-        out_str = f"{f_c_type}" + ", intent(" + self.intent + ") :: c_" + self.name
-        out_str += self.get_dim_string()
-        
-        return out_str
+        name = ""
+        intent = ""
+        if is_in_map:
+            name = f"c_{self.name}"
+            intent = self.intent
+        else:
+            # Otherwise it is probably a custom type? In a registry?
+            name = f"c_key_{self.name}"
+            intent = "in"  # probably... Unless a constructor - could check this somehow?
+
+        return Argument(name, f_c_type, intent=intent, size=self.size)
 
     def __repr__(self):
         return "{" + self.to_string() + "}"
@@ -77,22 +91,25 @@ class Subroutine:
         self.name = name
         self.args = args
 
+    def signature(self):
+        out_str = f"subroutine {self.name}("
+        out_str += comma_separate_arg_list(self.args)
+        out_str += ")"
+        return out_str
+    
+    def __repr__(self):
+        return "{" + self.signature() + "}"
+
     def generate_f_interface_func(self, interface_prefix):
         # First check if any size arguments are needed.
-        new_args = [arg for arg in self.args]
-        for arg in self.args:
+        new_args = [arg.to_f_interface() for arg in self.args]
+        for idx, arg in enumerate(self.args):
             if arg.has_assumed_size():
-                new_args.append(Argument(f"{arg.name}_size", "size_t", "in"))
+                new_args.append(Argument(f"c_{arg.name}_size", "integer(c_size_t)", "in"))
+                new_args[idx].size = f"c_{arg.name}_size"
 
         out_str = f"subroutine {interface_prefix}_{self.name}_c("
-
-        idx = 0
-        for arg in new_args:
-            out_str += "c_" + arg.name
-            idx += 1
-            if idx < len(new_args):
-                out_str += ", "
-
+        out_str += comma_separate_arg_list(new_args)
         out_str += f""") &
     bind(c,name="{interface_prefix}_{self.name}_f90")
 
@@ -104,32 +121,28 @@ class Subroutine:
     implicit none
 """
         for arg in new_args:
-            out_str += " "*4 + arg.to_f_interface_decl() + "\n"
+            out_str += " "*4 + arg.to_string() + "\n"
 
         out_str += "\n    ! Locals\n"
         # Locals - fortran type equivalents
         for arg in self.args:
-            if "in" in arg.intent:
-                no_intent_arg = None
-                if arg.has_assumed_size():
-                    no_intent_arg = Argument(arg.name, arg.ftype, size = f"c_{arg.name}_size")
-                else:
-                    no_intent_arg = Argument(arg.name, arg.ftype, size = arg.size)
-                out_str += " "*4 + no_intent_arg.to_string() + "\n"
-
+            no_intent_arg = None
+            if arg.has_assumed_size():
+                no_intent_arg = Argument(arg.name, arg.ftype, size = f"c_{arg.name}_size")
+            else:
+                no_intent_arg = Argument(arg.name, arg.ftype, size = arg.size)
+            out_str += " "*4 + no_intent_arg.to_string() + "\n"
+                
         # --- MAIN BODY START ---
         # - Set locals to convert C types
         for arg in self.args:
-            out_str += " "*4 + f"{arg.name} = c_{arg.name}" + "\n"
+            if arg.intent != "out":
+                out_str += " "*4 + f"{arg.name} = c_{arg.name}" + "\n"
 
         out_str += "\n    ! -----------\n"
         # - Call F function
         out_str += " "*4 + f"call {self.name}("
-        for idx, arg in enumerate(self.args):
-            out_str += arg.name
-            if idx < len(self.args) - 1:
-                out_str += ", "
-
+        out_str += comma_separate_arg_list(self.args)
         out_str += ")\n\n"
         # - Set out variables
         for arg in self.args:
@@ -208,7 +221,7 @@ def make_f_interface_subroutines(interface_prefix, subroutines):
     for subroutine in subroutines:
         # TODO: re-use args for the c interface
         args, out_curr = subroutine.generate_f_interface_func(interface_prefix)
-        out += out_curr
+        out += out_curr + "\n"
 
     return out
 
@@ -227,6 +240,8 @@ if __name__ == "__main__":
 
     subroutines = parse_subroutines(file)
     functions = parse_functions(file)
+
+    print("GOT SUBROUTINES:", subroutines)
 
     # TODO: Parse from original module
     module_name = "example_interface"
